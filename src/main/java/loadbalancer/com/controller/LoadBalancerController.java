@@ -16,15 +16,7 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 public class LoadBalancerController {
 
-    @Value("${health.check.url}")
-    private String healthCheckUrl;
-
-    @Value("${health.check.period}")
-    private long healthCheckPeriod;
-
-
     private final LoggingFilter loggingFilter;
-
     private final RequestForwardingService requestForwardingService;
     private final HealthCheckService healthCheckService;
 

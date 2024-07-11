@@ -1,5 +1,8 @@
 package loadbalancer.com.configuration;
 
+import loadbalancer.com.service.BalancingStrategy;
+import loadbalancer.com.service.RoundRobinBalancingService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import java.util.Arrays;
@@ -9,6 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 public class LoadBalancerConfiguration {
+
+    @Value("${balancing.strategy}")
+    private String balancingStrategy;
 
     @Bean
     public List<String> backendUrls() {
@@ -30,5 +36,16 @@ public class LoadBalancerConfiguration {
         return new AtomicInteger(0);
     }
 
-
+    @Bean
+    public BalancingStrategy balancingStrategy() {
+        if ("roundrobin".equalsIgnoreCase(balancingStrategy)) {
+            return new RoundRobinBalancingService();
+        } else {
+            throw new IllegalArgumentException("Unknown balancing strategy: " + balancingStrategy);
+        }
+    }
 }
+
+
+
+

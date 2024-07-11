@@ -15,58 +15,57 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 @Service
 public class RequestForwardingService {
-
     private final List<String> activeServers;
-    private final AtomicInteger counter;
+
+    private BalancingStrategy balancingStrategy;
 
     private static final Logger logger = Logger.getLogger(RequestForwardingService.class.getName());
 
     @Autowired
-    public RequestForwardingService(List<String> activeServers, AtomicInteger counter) {
+    public RequestForwardingService(List<String> activeServers, BalancingStrategy balancingStrategy) {
         this.activeServers = activeServers;
-        this.counter = counter;
+        this.balancingStrategy = balancingStrategy;
+    }
+
+    public void setBalancingStrategy(BalancingStrategy balancingStrategy) {
+        this.balancingStrategy = balancingStrategy;
     }
 
     public String forwardRequestToBackend(HttpServletRequest request, String requestBody, RequestMethod method) {
-            synchronized (activeServers) {
-                int attempts = activeServers.size();
-                for (int i = 0; i < attempts; i++) {
-                    int serverIndex = counter.getAndUpdate(current -> (current + 1) % activeServers.size());
-                    if (serverIndex >= activeServers.size()) {
-                        continue;
-                    }
-                    String backendUri = activeServers.get(serverIndex) + request.getRequestURI();
+        synchronized (activeServers) {
+            int attempts = activeServers.size();
+            for (int i = 0; i < attempts; i++) {
+                String backendUri = balancingStrategy.chooseServer(activeServers) + request.getRequestURI();
 
-                    try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-                        CloseableHttpResponse response = null;
-                        if (method == RequestMethod.GET) {
-                            HttpGet httpGet = new HttpGet(backendUri);
-                            response = httpClient.execute(httpGet);
-                        } else if (method == RequestMethod.POST) {
-                            HttpPost httpPost = new HttpPost(backendUri);
-                            if (requestBody != null && !requestBody.isEmpty()) {
-                                httpPost.setEntity(new StringEntity(requestBody));
-                            }
-                            response = httpClient.execute(httpPost);
+                try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                    CloseableHttpResponse response = null;
+                    if (method == RequestMethod.GET) {
+                        HttpGet httpGet = new HttpGet(backendUri);
+                        response = httpClient.execute(httpGet);
+                    } else if (method == RequestMethod.POST) {
+                        HttpPost httpPost = new HttpPost(backendUri);
+                        if (requestBody != null && !requestBody.isEmpty()) {
+                            httpPost.setEntity(new StringEntity(requestBody));
                         }
-                        if (response != null) {
-                            String backendResponse = EntityUtils.toString(response.getEntity());
-                            logger.info("Response from server: " + response.getStatusLine());
-                            return backendResponse;
-                        }
-                    } catch (IOException e) {
-                        logger.info("Request to " + backendUri + " failed. Trying the next server.");
-                        e.printStackTrace();
+                        response = httpClient.execute(httpPost);
                     }
+                    if (response != null) {
+                        String backendResponse = EntityUtils.toString(response.getEntity());
+                        logger.info("Response from server: " + response.getStatusLine());
+                        return backendResponse;
+                    }
+                } catch (IOException e) {
+                    logger.info("Request to " + backendUri + " failed. Trying the next server.");
+                    e.printStackTrace();
                 }
             }
-            return "No backend servers available";
         }
+        return null;
+    }
     public String extractRequestBody(HttpServletRequest request) {
         try (Scanner s = new Scanner(request.getInputStream(), "UTF-8").useDelimiter("\\A")) {
             return s.hasNext() ? s.next() : "";
@@ -76,4 +75,5 @@ public class RequestForwardingService {
         return "";
     }
 
-    }
+
+}

@@ -3,13 +3,13 @@ package loadbalancer.com.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import loadbalancer.com.component.LoggingFilter;
+import loadbalancer.com.service.BalancingStrategy;
 import loadbalancer.com.service.HealthCheckService;
 import loadbalancer.com.service.RequestForwardingService;
+import loadbalancer.com.service.RoundRobinBalancingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.concurrent.CompletableFuture;
 
 
@@ -19,12 +19,24 @@ public class LoadBalancerController {
     private final LoggingFilter loggingFilter;
     private final RequestForwardingService requestForwardingService;
     private final HealthCheckService healthCheckService;
+    private final RoundRobinBalancingService roundRobinBalancingService;
 
     @Autowired
-    public LoadBalancerController(LoggingFilter loggingFilter, RequestForwardingService requestForwardingService, HealthCheckService healthCheckService) {
+    public LoadBalancerController(LoggingFilter loggingFilter, RequestForwardingService requestForwardingService, HealthCheckService healthCheckService, BalancingStrategy balancingStrategy, RoundRobinBalancingService roundRobinBalancingService) {
         this.loggingFilter = loggingFilter;
         this.requestForwardingService = requestForwardingService;
         this.healthCheckService = healthCheckService;
+        this.roundRobinBalancingService = roundRobinBalancingService;
+    }
+
+    @GetMapping("/change-strategy")
+    public String changeStrategy(@RequestParam String strategy) {
+        if ("roundrobin".equalsIgnoreCase(strategy)) {
+            requestForwardingService.setBalancingStrategy(roundRobinBalancingService);
+            return "Changed to RoundRobin strategy";
+        } else {
+            return "Unknown strategy";
+        }
     }
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)

@@ -3,10 +3,9 @@ package loadbalancer.com.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import loadbalancer.com.component.LoggingFilter;
-import loadbalancer.com.service.BalancingStrategy;
-import loadbalancer.com.service.HealthCheckService;
-import loadbalancer.com.service.RequestForwardingService;
-import loadbalancer.com.service.RoundRobinBalancingService;
+import loadbalancer.com.component.RandomNumberBalancing;
+import loadbalancer.com.component.RoundRobinBalancing;
+import loadbalancer.com.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,24 +18,29 @@ public class LoadBalancerController {
     private final LoggingFilter loggingFilter;
     private final RequestForwardingService requestForwardingService;
     private final HealthCheckService healthCheckService;
-    private final RoundRobinBalancingService roundRobinBalancingService;
+    private final RoundRobinBalancing roundRobinBalancing;
+
+    private final RandomNumberBalancing randomNumberBalancing;
 
     @Autowired
-    public LoadBalancerController(LoggingFilter loggingFilter, RequestForwardingService requestForwardingService, HealthCheckService healthCheckService, BalancingStrategy balancingStrategy, RoundRobinBalancingService roundRobinBalancingService) {
+    public LoadBalancerController(LoggingFilter loggingFilter, RequestForwardingService requestForwardingService, HealthCheckService healthCheckService, BalancingStrategy balancingStrategy, RoundRobinBalancing roundRobinBalancing, RandomNumberBalancing randomNumberBalancing) {
         this.loggingFilter = loggingFilter;
         this.requestForwardingService = requestForwardingService;
         this.healthCheckService = healthCheckService;
-        this.roundRobinBalancingService = roundRobinBalancingService;
+        this.roundRobinBalancing = roundRobinBalancing;
+        this.randomNumberBalancing = randomNumberBalancing;
     }
 
     @GetMapping("/change-strategy")
     public String changeStrategy(@RequestParam String strategy) {
         if ("roundrobin".equalsIgnoreCase(strategy)) {
-            requestForwardingService.setBalancingStrategy(roundRobinBalancingService);
+            requestForwardingService.setBalancingStrategy(roundRobinBalancing);
             return "Changed to RoundRobin strategy";
-        } else {
-            return "Unknown strategy";
+        } else if("randomnumber".equalsIgnoreCase(strategy)) {
+            requestForwardingService.setBalancingStrategy(randomNumberBalancing);
+            return "Changed to RandomNumber strategy";
         }
+        return "Unknown Strategy";
     }
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)

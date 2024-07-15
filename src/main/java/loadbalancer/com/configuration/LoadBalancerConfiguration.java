@@ -1,7 +1,8 @@
 package loadbalancer.com.configuration;
 
 import loadbalancer.com.service.BalancingStrategy;
-import loadbalancer.com.service.RoundRobinBalancingService;
+import loadbalancer.com.component.RandomNumberBalancing;
+import loadbalancer.com.component.RoundRobinBalancing;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +40,9 @@ public class LoadBalancerConfiguration {
     @Bean
     public BalancingStrategy balancingStrategy() {
         if ("roundrobin".equalsIgnoreCase(balancingStrategy)) {
-            return new RoundRobinBalancingService();
+            return new RoundRobinBalancing();
+        } else if ("randomnumber".equalsIgnoreCase(balancingStrategy)) {
+            return new RandomNumberBalancing();
         } else {
             throw new IllegalArgumentException("Unknown balancing strategy: " + balancingStrategy);
         }

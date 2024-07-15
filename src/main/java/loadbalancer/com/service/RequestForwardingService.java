@@ -36,6 +36,9 @@ public class RequestForwardingService {
     }
 
     public String forwardRequestToBackend(HttpServletRequest request, String requestBody, RequestMethod method) {
+        if(activeServers.isEmpty()) {
+            throw new IllegalArgumentException("Server list cannot be null or empty");
+        }
         synchronized (activeServers) {
             int attempts = activeServers.size();
             for (int i = 0; i < attempts; i++) {

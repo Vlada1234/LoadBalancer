@@ -35,6 +35,10 @@ public class RequestForwardingService {
         this.balancingStrategy = balancingStrategy;
     }
 
+    public BalancingStrategy getBalancingStrategy() {
+        return balancingStrategy;
+    }
+
     public String forwardRequestToBackend(HttpServletRequest request, String requestBody, RequestMethod method) {
         if(activeServers.isEmpty()) {
             throw new IllegalArgumentException("Server list cannot be null or empty");

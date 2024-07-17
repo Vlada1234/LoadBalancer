@@ -1,11 +1,15 @@
 package loadbalancer.com.component;
 
 import loadbalancer.com.service.BalancingStrategy;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
-@Component
+
 public class RandomNumberBalancing implements BalancingStrategy {
+
+    @Override
+    public String getStrategyName() {
+        return "RandomNumber";
+    }
 
     @Override
     public String chooseServer(List<String> servers) {

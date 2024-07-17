@@ -2,9 +2,7 @@ package loadbalancer.com.controller;
 
 
 import jakarta.servlet.http.HttpServletRequest;
-import loadbalancer.com.component.LoggingFilter;
-import loadbalancer.com.component.RandomNumberBalancing;
-import loadbalancer.com.component.RoundRobinBalancing;
+import loadbalancer.com.component.*;
 import loadbalancer.com.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,41 +31,33 @@ public class LoadBalancerController {
     }
 
     @PostMapping("/change-strategy")
-    public ResponseEntity<Map<String, String>> changeStrategy(@RequestBody Map<String, String> request) {
-        Map<String, String> response = new HashMap<>();
+    public ResponseEntity<StrategyResponse> changeStrategy(@RequestBody StrategyRequest request) {
 
         RoundRobinBalancing roundRobinBalancing = new RoundRobinBalancing();
         RandomNumberBalancing randomNumberBalancing = new RandomNumberBalancing();
 
-        String strategy = request.get("strategy");
+        String strategy = request.getStrategy();
 
         if ("roundrobin".equalsIgnoreCase(strategy)) {
             requestForwardingService.setBalancingStrategy(roundRobinBalancing);
-            response.put("message", "Changed to RoundRobin strategy") ;
-            return ResponseEntity.ok(response);
+            return ResponseEntity.noContent().build();
         } else if("randomnumber".equalsIgnoreCase(strategy)) {
             requestForwardingService.setBalancingStrategy(randomNumberBalancing);
-            response.put("message", "Changed to RandomNumber strategy");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.noContent().build();
         } else {
-            response.put("message", "Unknown Strategy");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StrategyResponse("Unknown Strategy"));
         }
     }
 
     @GetMapping("/current-strategy")
-    public  ResponseEntity<Map<String, String>> currentStrategy() {
-        Map<String, String> response = new HashMap<>();
+    public  ResponseEntity<StrategyResponse> currentStrategy() {
 
         RoundRobinBalancing roundRobinBalancing = new RoundRobinBalancing();
         RandomNumberBalancing randomNumberBalancing = new RandomNumberBalancing();
 
         BalancingStrategy currentStrategy = requestForwardingService.getBalancingStrategy();
         String currentStrategyName = currentStrategy.getStrategyName();
-        response.put("message", "Current strategy is: " + currentStrategyName);
-
-        return ResponseEntity.ok(response);
-
+        return ResponseEntity.ok(new StrategyResponse("Current strategy is: " + currentStrategyName));
     }
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)

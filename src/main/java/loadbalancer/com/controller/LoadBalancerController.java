@@ -3,14 +3,15 @@ package loadbalancer.com.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import loadbalancer.com.component.*;
+import loadbalancer.com.dto.ErrorResponse;
+import loadbalancer.com.dto.StrategyRequest;
+import loadbalancer.com.dto.StrategyResponse;
 import loadbalancer.com.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -31,21 +32,22 @@ public class LoadBalancerController {
     }
 
     @PostMapping("/change-strategy")
-    public ResponseEntity<StrategyResponse> changeStrategy(@RequestBody StrategyRequest request) {
+    public ResponseEntity<ErrorResponse> changeStrategy(@RequestBody StrategyRequest request) {
 
         RoundRobinBalancing roundRobinBalancing = new RoundRobinBalancing();
         RandomNumberBalancing randomNumberBalancing = new RandomNumberBalancing();
 
+
         String strategy = request.getStrategy();
 
-        if ("roundrobin".equalsIgnoreCase(strategy)) {
+        if (roundRobinBalancing.getStrategyName().equalsIgnoreCase(strategy)) {
             requestForwardingService.setBalancingStrategy(roundRobinBalancing);
             return ResponseEntity.noContent().build();
-        } else if("randomnumber".equalsIgnoreCase(strategy)) {
+        } else if(roundRobinBalancing.getStrategyName().equalsIgnoreCase(strategy)) {
             requestForwardingService.setBalancingStrategy(randomNumberBalancing);
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StrategyResponse("Unknown Strategy"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Unknown Strategy"));
         }
     }
 
@@ -57,7 +59,7 @@ public class LoadBalancerController {
 
         BalancingStrategy currentStrategy = requestForwardingService.getBalancingStrategy();
         String currentStrategyName = currentStrategy.getStrategyName();
-        return ResponseEntity.ok(new StrategyResponse("Current strategy is: " + currentStrategyName));
+        return ResponseEntity.ok(new StrategyResponse(currentStrategyName));
     }
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)

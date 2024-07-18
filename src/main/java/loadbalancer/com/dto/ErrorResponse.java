@@ -1,13 +1,13 @@
-package loadbalancer.com.component;
+package loadbalancer.com.dto;
 
-public class StrategyResponse {
+public class ErrorResponse  {
+
     private String message;
 
-
-    public StrategyResponse() {
+    public ErrorResponse() {
     }
 
-    public StrategyResponse(String message) {
+    public ErrorResponse(String message) {
         this.message = message;
     }
 

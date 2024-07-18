@@ -9,9 +9,13 @@ public class RoundRobinBalancing implements BalancingStrategy {
     private final AtomicInteger counter = new AtomicInteger(0);
 
 
+
+    public RoundRobinBalancing() {
+    }
+
     @Override
     public String getStrategyName() {
-        return "RoundRobin";
+        return StrategyNames.ROUNDROBIN.name();
     }
 
     @Override

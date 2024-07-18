@@ -1,4 +1,4 @@
-package loadbalancer.com.component;
+package loadbalancer.com.dto;
 
 public class StrategyRequest {
     private String strategy;

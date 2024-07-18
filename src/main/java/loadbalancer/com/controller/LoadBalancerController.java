@@ -3,12 +3,10 @@ package loadbalancer.com.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import loadbalancer.com.component.*;
-import loadbalancer.com.dto.ErrorResponse;
 import loadbalancer.com.dto.StrategyRequest;
 import loadbalancer.com.dto.StrategyResponse;
 import loadbalancer.com.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,22 +30,19 @@ public class LoadBalancerController {
     }
 
     @PostMapping("/change-strategy")
-    public ResponseEntity<ErrorResponse> changeStrategy(@RequestBody StrategyRequest request) {
+    public ResponseEntity<StrategyResponse> changeStrategy(@RequestBody StrategyRequest request) {
 
         RoundRobinBalancing roundRobinBalancing = new RoundRobinBalancing();
         RandomNumberBalancing randomNumberBalancing = new RandomNumberBalancing();
 
+        StrategyNames strategy = request.getStrategy();
 
-        String strategy = request.getStrategy();
-
-        if (roundRobinBalancing.getStrategyName().equalsIgnoreCase(strategy)) {
+        if (roundRobinBalancing.getStrategyName()== strategy) {
             requestForwardingService.setBalancingStrategy(roundRobinBalancing);
             return ResponseEntity.noContent().build();
-        } else if(roundRobinBalancing.getStrategyName().equalsIgnoreCase(strategy)) {
+        } else {
             requestForwardingService.setBalancingStrategy(randomNumberBalancing);
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Unknown Strategy"));
         }
     }
 
@@ -58,7 +53,7 @@ public class LoadBalancerController {
         RandomNumberBalancing randomNumberBalancing = new RandomNumberBalancing();
 
         BalancingStrategy currentStrategy = requestForwardingService.getBalancingStrategy();
-        String currentStrategyName = currentStrategy.getStrategyName();
+        StrategyNames currentStrategyName = currentStrategy.getStrategyName();
         return ResponseEntity.ok(new StrategyResponse(currentStrategyName));
     }
 

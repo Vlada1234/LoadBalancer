@@ -7,8 +7,8 @@ import java.util.List;
 public class RandomNumberBalancing implements BalancingStrategy {
 
     @Override
-    public String getStrategyName() {
-        return StrategyNames.RANDOMNUMBER.name();
+    public StrategyNames getStrategyName() {
+        return StrategyNames.RANDOMNUMBER;
     }
 
     @Override

@@ -14,8 +14,8 @@ public class RoundRobinBalancing implements BalancingStrategy {
     }
 
     @Override
-    public String getStrategyName() {
-        return StrategyNames.ROUNDROBIN.name();
+    public StrategyNames getStrategyName() {
+        return StrategyNames.ROUNDROBIN;
     }
 
     @Override

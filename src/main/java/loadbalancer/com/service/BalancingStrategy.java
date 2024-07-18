@@ -1,8 +1,9 @@
 package loadbalancer.com.service;
 
+import loadbalancer.com.component.StrategyNames;
 import java.util.List;
 
 public interface BalancingStrategy {
-    String getStrategyName();
+    StrategyNames getStrategyName();
     String chooseServer(List<String> servers);
 }

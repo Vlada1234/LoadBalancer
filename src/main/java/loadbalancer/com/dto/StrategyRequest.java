@@ -1,20 +1,22 @@
 package loadbalancer.com.dto;
 
+import loadbalancer.com.component.StrategyNames;
+
 public class StrategyRequest {
-    private String strategy;
+    private StrategyNames strategy;
 
     public StrategyRequest() {
     }
 
-    public StrategyRequest(String strategy) {
+    public StrategyRequest(StrategyNames strategy) {
         this.strategy = strategy;
     }
 
-    public String getStrategy() {
+    public StrategyNames getStrategy() {
         return strategy;
     }
 
-    public void setStrategy(String strategy) {
+    public void setStrategy(StrategyNames strategy) {
         this.strategy = strategy;
     }
 }

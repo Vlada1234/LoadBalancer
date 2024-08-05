@@ -23,12 +23,15 @@ public class RequestForwardingService {
 
     private BalancingStrategy balancingStrategy;
 
+    private RateLimiter rateLimiter;
+
     private static final Logger logger = Logger.getLogger(RequestForwardingService.class.getName());
 
     @Autowired
-    public RequestForwardingService(List<String> activeServers, BalancingStrategy balancingStrategy) {
+    public RequestForwardingService(List<String> activeServers, BalancingStrategy balancingStrategy, RateLimiter rateLimiter) {
         this.activeServers = activeServers;
         this.balancingStrategy = balancingStrategy;
+        this.rateLimiter = rateLimiter;
     }
 
     public void setBalancingStrategy(BalancingStrategy balancingStrategy) {
@@ -40,6 +43,11 @@ public class RequestForwardingService {
     }
 
     public String forwardRequestToBackend(HttpServletRequest request, String requestBody, RequestMethod method) {
+        if(!rateLimiter.isAllowed()) {
+            logger.warning("Request rate limit exceeded");
+            return "Rate limit exceeded";
+        }
+
         if(activeServers.isEmpty()) {
             throw new IllegalArgumentException("Server list cannot be null or empty");
         }
